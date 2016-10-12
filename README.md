@@ -29,6 +29,12 @@ Here you can set up what requests will be triggered and what data will be extrac
 #### Replace message list
 Here you can set up what data from extraction will be added/replaced in the following requests. The replace string can be set by the selection of the request.
 
+### Logger
+Logs all messaged what were modified or triggered by ExtendedMacro.
+
+### Settings
+He you can specifies what tool will use the ExtendedMacro plug-in.
+
 ## How to
 1. Select messages e,g, in the Proxy tab, do right mouse click and select "Send to ExtendedMacro"
 2. go to ExtendedMacro and click on the message in the "Extraction message list"
