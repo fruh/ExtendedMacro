@@ -12,7 +12,7 @@ import java.util.List;
 
 public class BurpExtender implements IBurpExtender, IHttpListener, IContextMenuFactory, ITab {
     private static String EXTENSION_NAME = "ExtendedMacro";
-    private static String VERSION = "v0.0.1-alpha";
+    private static String VERSION = "v0.0.2";
     public PrintWriter stdout;
     public PrintWriter stderr;
     public IExtensionHelpers helpers;
@@ -56,6 +56,7 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IContextMenuF
     private JCheckBox scanner;
     private JCheckBox sequencer;
     private JCheckBox spider;
+    private JCheckBox proxy;
 
     @Override
     public void registerExtenderCallbacks(IBurpExtenderCallbacks iBurpExtenderCallbacks) {
@@ -80,6 +81,15 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IContextMenuF
         callbacks.addSuiteTab(this);
 
         stdout.println("[*] " + EXTENSION_NAME + " " + VERSION);
+    }
+
+    public boolean isEnabledAtLeastOne() {
+        return intruder.isSelected() ||
+                repeater.isSelected() ||
+                scanner.isSelected() ||
+                sequencer.isSelected() ||
+                proxy.isSelected() ||
+                spider.isSelected();
     }
 
     public String getNextMsgId() {
@@ -367,6 +377,7 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IContextMenuF
         scanner = new JCheckBox("Scanner");
         sequencer = new JCheckBox("Sequencer");
         spider = new JCheckBox("Spider");
+        proxy = new JCheckBox("Proxy")
         JButton enDisTool = new JButton("All/None");
 
         repeater.setSelected(true);
@@ -374,6 +385,7 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IContextMenuF
         scanner.setSelected(true);
         sequencer.setSelected(true);
         spider.setSelected(true);
+        proxy.setSelected(false);
 
         enDisTool.addActionListener(new ConfigListener(this, ConfigActions.A_ENABLE_DISABLE));
 
@@ -384,16 +396,9 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IContextMenuF
         confPanel.add(scanner);
         confPanel.add(sequencer);
         confPanel.add(spider);
+        confPanel.add(proxy);
 
         mainTabPane.addTab("Settings", confPanel);
-    }
-
-    public boolean isEnabledAtLeatOne() {
-        return intruder.isSelected() ||
-                repeater.isSelected() ||
-                scanner.isSelected() ||
-                sequencer.isSelected() ||
-                spider.isSelected();
     }
 
     public void setAllTools(boolean enabled) {
@@ -402,6 +407,7 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IContextMenuF
         scanner.setSelected(enabled);
         sequencer.setSelected(enabled);
         spider.setSelected(enabled);
+        proxy.setSelected(enabled);
     }
 
 
@@ -421,6 +427,9 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IContextMenuF
 
             case IBurpExtenderCallbacks.TOOL_SPIDER:
                 return spider.isSelected();
+
+            case IBurpExtenderCallbacks.TOOL_PROXY:
+                return proxy.isSelected();
         }
         return false;
     }
