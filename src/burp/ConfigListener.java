@@ -218,7 +218,7 @@ public class ConfigListener implements ActionListener {
                 break;
 
             case A_ENABLE_DISABLE:
-                extender.setAllTools(!extender.isEnabledAtLeatOne());
+                extender.setAllTools(!extender.isEnabledAtLeastOne());
 
                 break;
         }

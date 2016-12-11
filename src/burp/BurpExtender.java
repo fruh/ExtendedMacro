@@ -2,6 +2,8 @@ package burp;
 
 import javax.swing.*;
 import java.awt.*;
+import javax.swing.text.NumberFormatter;
+import java.text.NumberFormat;
 import java.io.PrintWriter;
 import java.util.*;
 import java.util.List;
@@ -49,6 +51,7 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IContextMenuF
     private int msgId = 0;
     private int msgIdLogger = 0;
 
+    private long lastExtractionTime = 0l;
     private MessagesModel loggerMessagesModel;
 
     private JCheckBox repeater;
@@ -57,6 +60,7 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IContextMenuF
     private JCheckBox sequencer;
     private JCheckBox spider;
     private JCheckBox proxy;
+    private JFormattedTextField extractionDelayInput;
 
     @Override
     public void registerExtenderCallbacks(IBurpExtenderCallbacks iBurpExtenderCallbacks) {
@@ -284,10 +288,11 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IContextMenuF
 
         replaceStringField = new JTextArea();
         replaceType = new JComboBox<>();
-        replaceType.addItem("Replace on selected");
-        replaceType.addItem("Add new header on selected");
-        replaceType.addItem("Replace on last request");
-        replaceType.addItem("Add new header on last request");
+        replaceType.addItem(Replace.TYPE_REP_SEL);
+        replaceType.addItem(Replace.TYPE_ADD_SEL);
+        replaceType.addItem(Replace.TYPE_REP_LAST);
+        replaceType.addItem(Replace.TYPE_ADD_LAST);
+        replaceType.addItem(Replace.TYPE_REP_HEADER_LAST);
         replaceNameStringField = new JTextField();
 
         replaceType.addActionListener(new ConfigChangedListener(this, ConfigActions.A_REP_CONFIG_CHANGED));
@@ -371,14 +376,38 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IContextMenuF
 
         // configuration tab
         JPanel confPanel = new JPanel();
+
+        confPanel.setLayout(new BoxLayout(confPanel, BoxLayout.Y_AXIS));
+        //confPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+
         JLabel settingsTool = new JLabel("Select what tools are enabled:");
+        settingsTool.setAlignmentX(Component.LEFT_ALIGNMENT);
+        JButton enDisTool = new JButton("All/None");
+        enDisTool.setAlignmentX(Component.LEFT_ALIGNMENT);
+
         repeater = new JCheckBox("Repeater");
         intruder = new JCheckBox("Intruder");
         scanner = new JCheckBox("Scanner");
         sequencer = new JCheckBox("Sequencer");
         spider = new JCheckBox("Spider");
-        proxy = new JCheckBox("Proxy")
-        JButton enDisTool = new JButton("All/None");
+        proxy = new JCheckBox("Proxy");
+
+
+
+        NumberFormat format = NumberFormat.getInstance();
+        NumberFormatter formatter = new NumberFormatter(format);
+        formatter.setValueClass(Integer.class);
+        formatter.setMinimum(0);
+        formatter.setMaximum(Integer.MAX_VALUE);
+        formatter.setAllowsInvalid(false);
+        // If you want the value to be committed on each keystroke instead of focus lost
+        //formatter.setCommitsOnValidEdit(true);
+        extractionDelayInput = new JFormattedTextField(formatter);
+        extractionDelayInput.setMinimumSize(extractionDelayInput.getPreferredSize());
+
+        // default is zero delay - extraction is done everytime
+        extractionDelayInput.setValue(new Integer(0));
+
 
         repeater.setSelected(true);
         intruder.setSelected(true);
@@ -387,19 +416,40 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IContextMenuF
         spider.setSelected(true);
         proxy.setSelected(false);
 
+        JPanel desc1Panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        desc1Panel.add(settingsTool);
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        buttonPanel.add(enDisTool);
+        buttonPanel.add(repeater);
+        buttonPanel.add(intruder);
+        buttonPanel.add(scanner);
+        buttonPanel.add(sequencer);
+        buttonPanel.add(spider);
+        buttonPanel.add(proxy);
+
         enDisTool.addActionListener(new ConfigListener(this, ConfigActions.A_ENABLE_DISABLE));
 
-        confPanel.add(settingsTool);
-        confPanel.add(enDisTool);
-        confPanel.add(repeater);
-        confPanel.add(intruder);
-        confPanel.add(scanner);
-        confPanel.add(sequencer);
-        confPanel.add(spider);
-        confPanel.add(proxy);
+        JPanel extrPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JLabel extrDelayDesc = new JLabel("Select what tools are enabled:");
+
+        extrPanel.add(extractionDelayInput);
+
+        confPanel.add(desc1Panel);
+        confPanel.add(buttonPanel);
+        confPanel.add(extrPanel);
+        confPanel.add(Box.createVerticalGlue());
 
         mainTabPane.addTab("Settings", confPanel);
     }
+
+    private Component leftJustify(JPanel panel)  {
+        Box b = Box.createHorizontalBox();
+        b.add(panel);
+        b.add(Box.createHorizontalGlue());
+        return b;
+    }
+
 
     public void setAllTools(boolean enabled) {
         repeater.setSelected(enabled);
@@ -410,6 +460,9 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IContextMenuF
         proxy.setSelected(enabled);
     }
 
+    private int getExtractionDelay(){
+        return (Integer) extractionDelayInput.getValue();
+    }
 
     public boolean isToolEnabled(int toolFlag) {
         switch (toolFlag) {
@@ -448,36 +501,49 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IContextMenuF
             String newRequest;
             String extractedData;
 
-            for (Message m:messages) {
-                newRequest = new String(m.getMessageInfo().getRequest());
+            long currentTime = System.currentTimeMillis();
+            long difference = currentTime - lastExtractionTime;
+            if (difference > getExtractionDelay() * 1000l){
+                stdout.println("[+] Extraction is being done, time since the last (s): " + difference/1000 + ", delay is " + getExtractionDelay()
+                        + " s");
+                lastExtractionTime = currentTime;
 
-                // there is something to replace
-                if (m.hasReplace()) {
-                    for (String repId: m.getRepRefSet()) {
-                        newRequest = replaceModel.getReplaceById(repId).replaceData(m.getMessageInfo(), helpers);
+                // do extraction
+                for (Message m : messages) {
+                    newRequest = new String(m.getMessageInfo().getRequest());
+
+                    // there is something to replace
+                    if (m.hasReplace()) {
+                        for (String repId : m.getRepRefSet()) {
+                            stdout.println("[*] Replacing repId:" + repId);
+                            newRequest = replaceModel.getReplaceById(repId).replaceData(newRequest, helpers);
+                        }
                     }
-                }
-                // make updated request
-                IHttpRequestResponse newMsgInfo = callbacks.makeHttpRequest(
-                        m.getMessageInfo().getHttpService(), newRequest.getBytes());
-                // log message
-                loggerMessagesModel.addMessage(newMsgInfo, getNextMsgIdLogger());
+                    // make updated request
+                    IHttpRequestResponse newMsgInfo = callbacks.makeHttpRequest(
+                            m.getMessageInfo().getHttpService(), newRequest.getBytes());
+                    // log message
+                    loggerMessagesModel.addMessage(newMsgInfo, getNextMsgIdLogger());
 
-                // there is something to extract from received response
-                if (m.hasExtraction()) {
-                    for (String extId: m.getExtRefSet()) {
-                        extractedData = extractionModel.getExtractionById(extId).extractData(
-                                new String(newMsgInfo.getResponse()));
-                        // update replace references
-                        for (String repId:extractionModel.getExtractionById(extId).getRepRefSet()) {
-                            replaceModel.getReplaceById(repId).setDataToPaste(extractedData);
+                    // there is something to extract from received response
+                    if (m.hasExtraction()) {
+                        for (String extId: m.getExtRefSet()) {
+                            extractedData = extractionModel.getExtractionById(extId).extractData(
+                                    new String(newMsgInfo.getResponse()));
+                            // update replace references
+                            for (String repId : extractionModel.getExtractionById(extId).getRepRefSet()) {
+                                replaceModel.getReplaceById(repId).setDataToPaste(extractedData);
+                            }
                         }
                     }
                 }
+            } else {
+                stdout.println("[-] No extraction being done, time since the last (s): " + difference/1000 + ", delay is " + getExtractionDelay() + "ss");
             }
+
             // replace data in the last request, it is not in the message list
-            for (Replace rep:replaceModel.getReplacesLast()) {
-                newRequest = rep.replaceData(messageInfo, helpers);
+            for (Replace rep : replaceModel.getReplacesLast()) {
+                newRequest = rep.replaceData(new String(messageInfo.getRequest()), helpers);
                 messageInfo.setRequest(newRequest.getBytes());
             }
         }
@@ -648,8 +714,11 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IContextMenuF
         int extRow = extractionTable.getSelectedRow();
         boolean ignore_rep_row = false;
 
-        if (replaceType.getSelectedItem().toString() == Replace.TYPE_ADD_LAST ||
-                replaceType.getSelectedItem().toString() == Replace.TYPE_REP_LAST) {
+
+        String replaceTypeString = replaceType.getSelectedItem().toString();
+        if (replaceTypeString.equals(Replace.TYPE_ADD_LAST) ||
+                replaceTypeString.equals(Replace.TYPE_REP_LAST) ||
+                replaceTypeString.equals(Replace.TYPE_REP_HEADER_LAST)) {
             ignore_rep_row = true;
         }
 
@@ -661,8 +730,8 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IContextMenuF
             int extMsgRow = ((MessagesModel)extMessagesTable.getModel()).getRowById(
                     extractionModel.getExtraction(extRow).getMsgId());
             // replacing or adding header, must be selected only the following message
-            if ((replaceType.getSelectedItem().toString() == Replace.TYPE_ADD_SEL ||
-                    replaceType.getSelectedItem().toString() == Replace.TYPE_REP_SEL) &&
+            if ((replaceTypeString.equals(Replace.TYPE_ADD_SEL) ||
+                    replaceTypeString.equals(Replace.TYPE_REP_SEL)) &&
                     // trying to replace in the previous or same message
                     repMsgRow <= extMsgRow) {
                 stdout.println("[-] Can not replace on previous or same message.");

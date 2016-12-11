@@ -1,6 +1,8 @@
 package burp;
 
 import java.util.List;
+import java.util.Iterator;
+import java.io.PrintWriter;
 
 /**
  * Created by fruh on 9/7/16.
@@ -10,6 +12,7 @@ public class Replace {
     public static String TYPE_ADD_SEL = "Add new header on selected";
     public static String TYPE_REP_LAST = "Replace on last request";
     public static String TYPE_ADD_LAST = "Add new header on last request";
+    public static String TYPE_REP_HEADER_LAST = "Replace header on last request";
 
     private String dataToPaste;
     private String replaceStr;
@@ -41,16 +44,32 @@ public class Replace {
         this.replaceStr = replaceStr;
     }
 
-    public String replaceData(IHttpRequestResponse messageInfo, IExtensionHelpers helpers) {
-        String request = new String(messageInfo.getRequest());
+//      public String replaceData(IHttpRequestResponse messageInfo, IExtensionHelpers helpers, PrintWriter stdout) {
+    public String replaceData(String request, IExtensionHelpers helpers) {
+//        String request = new String(messageInfo.getRequest());
 
-        if (type == TYPE_REP_SEL || type == TYPE_REP_LAST) {
+        if (type.equals(TYPE_REP_SEL) || type.equals(TYPE_REP_LAST)) {
             request = request.replace(replaceStr, dataToPaste);
-        }
-        else {
-            IRequestInfo rqInfo = helpers.analyzeRequest(messageInfo);
+        } else {
+            IRequestInfo rqInfo = helpers.analyzeRequest(request.getBytes());
             List<String> headers = rqInfo.getHeaders();
-            headers.add(replaceStr + ": " + dataToPaste);
+
+            //headers.add(replaceStr + ": " + dataToPaste);
+            // No ":" is added here, you should place it manually
+            //headers.add(replaceStr + dataToPaste);
+//            String urlDecodedDataToPaste = helpers.urlDecode(dataToPaste);
+
+            if (type.equals(TYPE_REP_HEADER_LAST)){
+                for (Iterator<String> iterator = headers.iterator(); iterator.hasNext();){
+                    String header = iterator.next();
+                    if (header.startsWith(replaceStr)){
+                        iterator.remove();
+                    }
+                }
+            }
+
+//            headers.add(replaceStr + urlDecodedDataToPaste);
+            headers.add(replaceStr + dataToPaste);
 
             String msgBody = request.substring(rqInfo.getBodyOffset());
             request = new String(helpers.buildHttpMessage(headers, msgBody.getBytes()));
