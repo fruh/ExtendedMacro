@@ -37,6 +37,9 @@ public class MenuListener implements ActionListener {
                     IHttpRequestResponse persistedMsg = extender.getCallbacks().saveBuffersToTempFiles(msgInfo);
                     model.addMessage(persistedMsg, extender.getNextMsgId());
                 }
+
+                Utils.blinkTab(extender);
+
                 break;
 
             case A_REMOVE_MSG:

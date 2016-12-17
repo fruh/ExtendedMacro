@@ -15,6 +15,7 @@ import java.util.List;
 
 public class BurpExtender implements IBurpExtender, IHttpListener, IContextMenuFactory, ITab {
     private static String EXTENSION_NAME = "ExtendedMacro";
+    private static String EXTENSION_NAME_TAB_NAME = "Extended Macro";
     private static String VERSION = "v0.0.2";
     public PrintWriter stdout;
     public PrintWriter stderr;
@@ -64,7 +65,7 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IContextMenuF
     private JCheckBox boxProxy;
     private JFormattedTextField delayInput;
 
-    private Color headerColor = new Color(229, 137, 0);
+    static Color BURP_ORANGE = new Color(229, 137, 0);
     private Font headerFont = new Font("Nimbus", Font.BOLD, 13);
 
     @Override
@@ -396,7 +397,7 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IContextMenuF
 
         JLabel header1 = new JLabel("Tools scope");
         header1.setAlignmentX(Component.LEFT_ALIGNMENT);
-        header1.setForeground(headerColor);
+        header1.setForeground(BURP_ORANGE);
         header1.setFont(headerFont);
         header1.setBorder(new EmptyBorder(5, 0, 5, 0));
 
@@ -441,7 +442,7 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IContextMenuF
         // Other settings
         JLabel header2 = new JLabel("Other settings");
         header2.setAlignmentX(Component.LEFT_ALIGNMENT);
-        header2.setForeground(headerColor);
+        header2.setForeground(BURP_ORANGE);
         header2.setFont(headerFont);
         header2.setBorder(new EmptyBorder(5, 0, 5, 0));
 
@@ -630,7 +631,7 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IContextMenuF
 
     @Override
     public String getTabCaption() {
-        return EXTENSION_NAME;
+        return EXTENSION_NAME_TAB_NAME;
     }
 
     @Override
