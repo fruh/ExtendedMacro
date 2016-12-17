@@ -23,6 +23,7 @@ public class ReplaceTable extends JTable {
 
             extender.getReplaceNameStringField().setText(rep.getId());
             extender.getReplaceStringField().setText(rep.getReplaceStr());
+            extender.getReplaceUrlDecodeCheckbox().setSelected(rep.isUrlDecode());
 
             int j;
             for (j = 0; j < extender.getReplaceType().getModel().getSize(); j++) {

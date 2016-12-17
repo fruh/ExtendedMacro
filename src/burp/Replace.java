@@ -14,6 +14,7 @@ public class Replace {
     public static String TYPE_ADD_LAST = "Add new header on last request";
     public static String TYPE_REP_HEADER_LAST = "Replace header on last request";
 
+    private boolean urlDecode = false;
     private String dataToPaste;
     private String replaceStr;
     private String id;
@@ -44,20 +45,12 @@ public class Replace {
         this.replaceStr = replaceStr;
     }
 
-//      public String replaceData(IHttpRequestResponse messageInfo, IExtensionHelpers helpers, PrintWriter stdout) {
     public String replaceData(String request, IExtensionHelpers helpers) {
-//        String request = new String(messageInfo.getRequest());
-
         if (type.equals(TYPE_REP_SEL) || type.equals(TYPE_REP_LAST)) {
             request = request.replace(replaceStr, dataToPaste);
         } else {
             IRequestInfo rqInfo = helpers.analyzeRequest(request.getBytes());
             List<String> headers = rqInfo.getHeaders();
-
-            //headers.add(replaceStr + ": " + dataToPaste);
-            // No ":" is added here, you should place it manually
-            //headers.add(replaceStr + dataToPaste);
-//            String urlDecodedDataToPaste = helpers.urlDecode(dataToPaste);
 
             if (type.equals(TYPE_REP_HEADER_LAST)){
                 for (Iterator<String> iterator = headers.iterator(); iterator.hasNext();){
@@ -68,8 +61,9 @@ public class Replace {
                 }
             }
 
-//            headers.add(replaceStr + urlDecodedDataToPaste);
-            headers.add(replaceStr + dataToPaste);
+            //headers.add(replaceStr + ": " + dataToPaste);
+            // No ":" is added here, you should place it manually
+            headers.add(replaceStr + (urlDecode ? helpers.urlDecode(dataToPaste) : dataToPaste));
 
             String msgBody = request.substring(rqInfo.getBodyOffset());
             request = new String(helpers.buildHttpMessage(headers, msgBody.getBytes()));
@@ -107,6 +101,14 @@ public class Replace {
 
     public Extraction getExt() {
         return ext;
+    }
+
+    public boolean isUrlDecode() {
+        return urlDecode;
+    }
+
+    public void setUrlDecode(boolean urlDecode) {
+        this.urlDecode = urlDecode;
     }
 
     @Override

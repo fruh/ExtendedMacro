@@ -127,6 +127,8 @@ public class ConfigListener implements ActionListener {
                             extender.getExtractionTable().getSelectedRow());
                     Replace rep = new Replace(name, extender.getReplaceStringField().getText(),
                             extender.getReplaceType().getSelectedItem().toString(), ext);
+                    rep.setUrlDecode(extender.getReplaceUrlDecodeCheckbox().isSelected());
+
                     ext.getRepRefSet().add(name);
 
                     // set rep messageId and reference to msg

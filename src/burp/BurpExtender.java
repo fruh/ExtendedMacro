@@ -49,6 +49,7 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IContextMenuF
     private JTextArea replaceStringField;
     private JComboBox<String> replaceType;
     private JTextField replaceNameStringField;
+    private JCheckBox replaceUrlDecodeCheckbox;
     private int msgId = 0;
     private int msgIdLogger = 0;
 
@@ -311,6 +312,11 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IContextMenuF
         replaceButtonsPane.add(replaceType);
         replaceButtonsPane.add(new JLabel("Replace/Header name:"));
         replaceButtonsPane.add(replaceStringField);
+
+        replaceUrlDecodeCheckbox = new JCheckBox("", false);
+
+        replaceButtonsPane.add(new JLabel("URL decode:"));
+        replaceButtonsPane.add(replaceUrlDecodeCheckbox);
 
         repCreateButton = new JButton("Add");
         repCreateButton.setEnabled(false);
@@ -658,6 +664,10 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IContextMenuF
 
     public JTextField getReplaceNameStringField() {
         return replaceNameStringField;
+    }
+
+    public JCheckBox getReplaceUrlDecodeCheckbox() {
+        return replaceUrlDecodeCheckbox;
     }
 
     public MessagesTable getExtMessagesTable() {
