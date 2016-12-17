@@ -33,8 +33,9 @@ public class MenuListener implements ActionListener {
         switch (action) {
             case A_SEND_TO_EM:
                 for (IHttpRequestResponse msgInfo: messages) {
-                    // add message to table model
-                    model.addMessage(msgInfo, extender.getNextMsgId());
+                    // copy and add message to table model
+                    IHttpRequestResponse persistedMsg = extender.getCallbacks().saveBuffersToTempFiles(msgInfo);
+                    model.addMessage(persistedMsg, extender.getNextMsgId());
                 }
                 break;
 

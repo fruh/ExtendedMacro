@@ -736,6 +736,10 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IContextMenuF
         }
     }
 
+    public IBurpExtenderCallbacks getCallbacks() {
+        return callbacks;
+    }
+
     /**
      * Check whether it is possible to create replace rule. The replace message must be selected and must be
      * after the current extraction message. The extraction must be selected.
