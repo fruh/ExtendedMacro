@@ -3,6 +3,7 @@ package burp;
 import javax.swing.*;
 import java.awt.*;
 import javax.swing.text.NumberFormatter;
+import javax.swing.border.EmptyBorder;
 import java.text.NumberFormat;
 import java.io.PrintWriter;
 import java.util.*;
@@ -54,13 +55,16 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IContextMenuF
     private long lastExtractionTime = 0l;
     private MessagesModel loggerMessagesModel;
 
-    private JCheckBox repeater;
-    private JCheckBox intruder;
-    private JCheckBox scanner;
-    private JCheckBox sequencer;
-    private JCheckBox spider;
-    private JCheckBox proxy;
-    private JFormattedTextField extractionDelayInput;
+    private JCheckBox boxRepeater;
+    private JCheckBox boxIntruder;
+    private JCheckBox boxScanner;
+    private JCheckBox boxSequencer;
+    private JCheckBox boxSpider;
+    private JCheckBox boxProxy;
+    private JFormattedTextField delayInput;
+
+    private Color headerColor = new Color(229, 137, 0);
+    private Font headerFont = new Font("Nimbus", Font.BOLD, 13);
 
     @Override
     public void registerExtenderCallbacks(IBurpExtenderCallbacks iBurpExtenderCallbacks) {
@@ -88,12 +92,12 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IContextMenuF
     }
 
     public boolean isEnabledAtLeastOne() {
-        return intruder.isSelected() ||
-                repeater.isSelected() ||
-                scanner.isSelected() ||
-                sequencer.isSelected() ||
-                proxy.isSelected() ||
-                spider.isSelected();
+        return  boxIntruder.isSelected() ||
+                boxRepeater.isSelected() ||
+                boxScanner.isSelected() ||
+                boxSequencer.isSelected() ||
+                boxProxy.isSelected() ||
+                boxSpider.isSelected();
     }
 
     public String getNextMsgId() {
@@ -355,7 +359,6 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IContextMenuF
         loggerMessagesTable.setComponentPopupMenu(loggerPopupMenu);
 
         JSplitPane logger = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-//        logger.setLayout(new GridLayout(0, 1));
 
         JPanel loggerMessagesEditorPanel = new JPanel();
         loggerMessagesEditorPanel.setLayout(new GridLayout(0, 2));
@@ -374,25 +377,69 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IContextMenuF
 
         mainTabPane.addTab("Logger", logger);
 
-        // configuration tab
-        JPanel confPanel = new JPanel();
+        initSettingsGui(mainTabPane);
+    }
 
-        confPanel.setLayout(new BoxLayout(confPanel, BoxLayout.Y_AXIS));
-        //confPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+    private void initSettingsGui(JTabbedPane mainTabPane){
+        boxRepeater = new JCheckBox("Repeater", true);
+        boxIntruder = new JCheckBox("Intruder", true);
+        boxScanner = new JCheckBox("Scanner", true);
+        boxSequencer = new JCheckBox("Sequencer", true);
+        boxSpider = new JCheckBox("Spider", true);
+        boxProxy = new JCheckBox("Proxy", false);
 
-        JLabel settingsTool = new JLabel("Select what tools are enabled:");
-        settingsTool.setAlignmentX(Component.LEFT_ALIGNMENT);
-        JButton enDisTool = new JButton("All/None");
-        enDisTool.setAlignmentX(Component.LEFT_ALIGNMENT);
+        JLabel header1 = new JLabel("Tools scope");
+        header1.setAlignmentX(Component.LEFT_ALIGNMENT);
+        header1.setForeground(headerColor);
+        header1.setFont(headerFont);
+        header1.setBorder(new EmptyBorder(5, 0, 5, 0));
 
-        repeater = new JCheckBox("Repeater");
-        intruder = new JCheckBox("Intruder");
-        scanner = new JCheckBox("Scanner");
-        sequencer = new JCheckBox("Sequencer");
-        spider = new JCheckBox("Spider");
-        proxy = new JCheckBox("Proxy");
+        JLabel label2 = new JLabel("Select the tools that the pre-request macro will be applied to.");
+        label2.setAlignmentX(Component.LEFT_ALIGNMENT);
+        label2.setBorder(new EmptyBorder(0, 0, 10, 0));
 
+        JButton toggleScopesButton = new JButton("All/None");
 
+        toggleScopesButton.setAlignmentX(Component.LEFT_ALIGNMENT);
+        toggleScopesButton.addActionListener(new ConfigListener(this, ConfigActions.A_ENABLE_DISABLE));
+
+        // Scope
+        JPanel scopePanel = new JPanel();
+        scopePanel.setBorder(new EmptyBorder(10, 0, 10, 0));
+
+        scopePanel.setLayout(new BoxLayout(scopePanel, BoxLayout.LINE_AXIS));
+        scopePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JPanel col1 = new JPanel();
+        col1.setLayout(new BoxLayout(col1, BoxLayout.PAGE_AXIS));
+        col1.add(boxRepeater);
+        col1.add(boxIntruder);
+        col1.setAlignmentY(Component.TOP_ALIGNMENT);
+
+        JPanel col2 = new JPanel();
+        col2.setLayout(new BoxLayout(col2, BoxLayout.PAGE_AXIS));
+        col2.add(boxScanner);
+        col2.add(boxSequencer);
+        col2.setAlignmentY(Component.TOP_ALIGNMENT);
+
+        JPanel col3 = new JPanel();
+        col3.setLayout(new BoxLayout(col3, BoxLayout.PAGE_AXIS));
+        col3.add(boxSpider);
+        col3.add(boxProxy);
+        col3.setAlignmentY(Component.TOP_ALIGNMENT);
+
+        scopePanel.add(col1);
+        scopePanel.add(col2);
+        scopePanel.add(col3);
+
+        // Other settings
+        JLabel header2 = new JLabel("Other settings");
+        header2.setAlignmentX(Component.LEFT_ALIGNMENT);
+        header2.setForeground(headerColor);
+        header2.setFont(headerFont);
+        header2.setBorder(new EmptyBorder(5, 0, 5, 0));
+
+        JLabel delayLabel = new JLabel("Extraction caching (in seconds, 0 = make extraction every request):");
 
         NumberFormat format = NumberFormat.getInstance();
         NumberFormatter formatter = new NumberFormatter(format);
@@ -400,89 +447,65 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IContextMenuF
         formatter.setMinimum(0);
         formatter.setMaximum(Integer.MAX_VALUE);
         formatter.setAllowsInvalid(false);
-        // If you want the value to be committed on each keystroke instead of focus lost
-        //formatter.setCommitsOnValidEdit(true);
-        extractionDelayInput = new JFormattedTextField(formatter);
-        extractionDelayInput.setMinimumSize(extractionDelayInput.getPreferredSize());
+        delayInput = new JFormattedTextField(formatter);
+        delayInput.setMinimumSize(delayInput.getPreferredSize());
+        delayInput.setColumns(2);
 
-        // default is zero delay - extraction is done everytime
-        extractionDelayInput.setValue(new Integer(0));
+        delayInput.setValue(0); // default is zero delay - extraction is done everytime
 
+        JPanel delayPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        delayPanel.add(delayLabel);
+        delayPanel.add(delayInput);
+        delayPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        repeater.setSelected(true);
-        intruder.setSelected(true);
-        scanner.setSelected(true);
-        sequencer.setSelected(true);
-        spider.setSelected(true);
-        proxy.setSelected(false);
+        // Put it all together
+        JPanel confPanel = new JPanel();
+        confPanel.setLayout(new BoxLayout(confPanel, BoxLayout.Y_AXIS));
+        confPanel.setBorder(new EmptyBorder(5, 15, 5, 15));
 
-        JPanel desc1Panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        desc1Panel.add(settingsTool);
+        confPanel.add(header1);
+        confPanel.add(label2);
+        confPanel.add(toggleScopesButton);
+        confPanel.add(scopePanel);
 
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        buttonPanel.add(enDisTool);
-        buttonPanel.add(repeater);
-        buttonPanel.add(intruder);
-        buttonPanel.add(scanner);
-        buttonPanel.add(sequencer);
-        buttonPanel.add(spider);
-        buttonPanel.add(proxy);
-
-        enDisTool.addActionListener(new ConfigListener(this, ConfigActions.A_ENABLE_DISABLE));
-
-        JPanel extrPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JLabel extrDelayDesc = new JLabel("Select what tools are enabled:");
-
-        extrPanel.add(extractionDelayInput);
-
-        confPanel.add(desc1Panel);
-        confPanel.add(buttonPanel);
-        confPanel.add(extrPanel);
-        confPanel.add(Box.createVerticalGlue());
+        confPanel.add(header2);
+        confPanel.add(delayPanel);
 
         mainTabPane.addTab("Settings", confPanel);
     }
 
-    private Component leftJustify(JPanel panel)  {
-        Box b = Box.createHorizontalBox();
-        b.add(panel);
-        b.add(Box.createHorizontalGlue());
-        return b;
-    }
-
-
     public void setAllTools(boolean enabled) {
-        repeater.setSelected(enabled);
-        intruder.setSelected(enabled);
-        scanner.setSelected(enabled);
-        sequencer.setSelected(enabled);
-        spider.setSelected(enabled);
-        proxy.setSelected(enabled);
+        boxRepeater.setSelected(enabled);
+        boxIntruder.setSelected(enabled);
+        boxScanner.setSelected(enabled);
+        boxSequencer.setSelected(enabled);
+        boxSpider.setSelected(enabled);
+        boxProxy.setSelected(enabled);
     }
 
     private int getExtractionDelay(){
-        return (Integer) extractionDelayInput.getValue();
+        return (Integer) delayInput.getValue();
     }
 
     public boolean isToolEnabled(int toolFlag) {
         switch (toolFlag) {
             case IBurpExtenderCallbacks.TOOL_INTRUDER:
-                return intruder.isSelected();
+                return boxIntruder.isSelected();
 
             case IBurpExtenderCallbacks.TOOL_REPEATER:
-                return repeater.isSelected();
+                return boxRepeater.isSelected();
 
             case IBurpExtenderCallbacks.TOOL_SCANNER:
-                return scanner.isSelected();
+                return boxScanner.isSelected();
 
             case IBurpExtenderCallbacks.TOOL_SEQUENCER:
-                return sequencer.isSelected();
+                return boxSequencer.isSelected();
 
             case IBurpExtenderCallbacks.TOOL_SPIDER:
-                return spider.isSelected();
+                return boxSpider.isSelected();
 
             case IBurpExtenderCallbacks.TOOL_PROXY:
-                return proxy.isSelected();
+                return boxProxy.isSelected();
         }
         return false;
     }
