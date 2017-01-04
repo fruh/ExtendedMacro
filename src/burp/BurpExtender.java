@@ -577,8 +577,8 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IContextMenuF
                 messageInfo.setRequest(newRequest.getBytes());
             }
         }
-        else {
-            // TODO: the sequnce is not correct in multihreaded
+        else if (messagesModel.getMessages().size() > 0){
+            // TODO: the sequence is not correct in multihreaded
             String fromTool = "UNKNOWN TOOL";
 
             switch (toolFlag) {
