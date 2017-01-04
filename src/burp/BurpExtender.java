@@ -16,7 +16,7 @@ import java.util.List;
 public class BurpExtender implements IBurpExtender, IHttpListener, IContextMenuFactory, ITab {
     private static String EXTENSION_NAME = "ExtendedMacro";
     private static String EXTENSION_NAME_TAB_NAME = "Extended Macro";
-    private static String VERSION = "v0.0.2";
+    private static String VERSION = "0.0.3";
     public PrintWriter stdout;
     public PrintWriter stderr;
     public IExtensionHelpers helpers;
