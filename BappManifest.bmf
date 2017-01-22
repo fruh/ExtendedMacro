@@ -1,0 +1,11 @@
+Uuid: 33839d04fdaa4e3b80292fbed115db13
+ExtensionType: 1
+Name: ExtendedMacro
+ScreenVersion: 0.0.3
+SerialVersion: 0
+MinPlatformVersion: 0
+ProOnly: False
+Author: Frantisek Uhrecky
+ShortDescription: Provides similar but extended functionality of the BurpSuite Macro feature
+EntryPoint: dist/extendedmacro.jar
+BuildCommand: ./build.sh
