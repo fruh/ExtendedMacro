@@ -16,7 +16,7 @@ import java.util.List;
 public class BurpExtender implements IBurpExtender, IHttpListener, IContextMenuFactory, ITab {
     private static String EXTENSION_NAME = "ExtendedMacro";
     private static String EXTENSION_NAME_TAB_NAME = "Extended Macro";
-    private static String VERSION = "0.0.3";
+    private static String VERSION = "0.0.4";
     public PrintWriter stdout;
     public PrintWriter stderr;
     public IExtensionHelpers helpers;
@@ -296,9 +296,9 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IContextMenuF
         replaceType = new JComboBox<>();
         replaceType.addItem(Replace.TYPE_REP_SEL);
         replaceType.addItem(Replace.TYPE_ADD_SEL);
-        replaceType.addItem(Replace.TYPE_REP_LAST);
-        replaceType.addItem(Replace.TYPE_ADD_LAST);
-        replaceType.addItem(Replace.TYPE_REP_HEADER_LAST);
+        replaceType.addItem(Replace.TYPE_REP_BURP);
+        replaceType.addItem(Replace.TYPE_ADD_BURP);
+        replaceType.addItem(Replace.TYPE_REP_HEADER_BURP);
         replaceNameStringField = new JTextField();
 
         replaceType.addActionListener(new ConfigChangedListener(this, ConfigActions.A_REP_CONFIG_CHANGED));
@@ -754,9 +754,9 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IContextMenuF
 
 
         String replaceTypeString = replaceType.getSelectedItem().toString();
-        if (replaceTypeString.equals(Replace.TYPE_ADD_LAST) ||
-                replaceTypeString.equals(Replace.TYPE_REP_LAST) ||
-                replaceTypeString.equals(Replace.TYPE_REP_HEADER_LAST)) {
+        if (replaceTypeString.equals(Replace.TYPE_ADD_BURP) ||
+                replaceTypeString.equals(Replace.TYPE_REP_BURP) ||
+                replaceTypeString.equals(Replace.TYPE_REP_HEADER_BURP)) {
             ignore_rep_row = true;
         }
 
