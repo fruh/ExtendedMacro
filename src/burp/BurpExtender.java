@@ -128,6 +128,7 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IContextMenuF
         mainPanel_up.add(p2);
         mainPanel.add(mainPanel_up);
         mainPanel.add(p3);
+        mainPanel.setResizeWeight(0.25);
 
         p1.setPreferredSize(new Dimension(100, 200));
         p2.setPreferredSize(new Dimension(100, 500));
