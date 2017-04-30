@@ -2,7 +2,6 @@ package burp;
 
 import java.util.List;
 import java.util.Iterator;
-import java.io.PrintWriter;
 
 /**
  * Created by fruh on 9/7/16.
@@ -10,9 +9,9 @@ import java.io.PrintWriter;
 public class Replace {
     public static String TYPE_REP_SEL = "Replace on selected";
     public static String TYPE_ADD_SEL = "Add new header on selected";
-    public static String TYPE_REP_LAST = "Replace on last request";
-    public static String TYPE_ADD_LAST = "Add new header on last request";
-    public static String TYPE_REP_HEADER_LAST = "Replace header on last request";
+    public static String TYPE_REP_BURP = "Replace on Burp request";
+    public static String TYPE_ADD_BURP = "Add new header on Burp request";
+    public static String TYPE_REP_HEADER_BURP = "Replace header on Burp request";
 
     private boolean urlDecode = false;
     private String dataToPaste;
@@ -46,13 +45,13 @@ public class Replace {
     }
 
     public String replaceData(String request, IExtensionHelpers helpers) {
-        if (type.equals(TYPE_REP_SEL) || type.equals(TYPE_REP_LAST)) {
+        if (type.equals(TYPE_REP_SEL) || type.equals(TYPE_REP_BURP)) {
             request = request.replace(replaceStr, dataToPaste);
         } else {
             IRequestInfo rqInfo = helpers.analyzeRequest(request.getBytes());
             List<String> headers = rqInfo.getHeaders();
 
-            if (type.equals(TYPE_REP_HEADER_LAST)){
+            if (type.equals(TYPE_REP_HEADER_BURP)){
                 for (Iterator<String> iterator = headers.iterator(); iterator.hasNext();){
                     String header = iterator.next();
                     if (header.startsWith(replaceStr)){

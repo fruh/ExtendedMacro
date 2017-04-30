@@ -16,14 +16,14 @@ import java.util.List;
 public class BurpExtender implements IBurpExtender, IHttpListener, IContextMenuFactory, ITab {
     private static String EXTENSION_NAME = "ExtendedMacro";
     private static String EXTENSION_NAME_TAB_NAME = "Extended Macro";
-    private static String VERSION = "0.0.3";
+    private static String VERSION = "0.0.5";
     public PrintWriter stdout;
     public PrintWriter stderr;
     public IExtensionHelpers helpers;
     private IBurpExtenderCallbacks callbacks;
     private MessagesTable extMessagesTable;
     private MessagesTable repMessagesTable;
-    private JPanel mainPanel;
+    private JSplitPane mainPanel;
     private MessagesModel messagesModel;
     private IMessageEditor extRequestEditor;
     private IMessageEditor extResponseEditor;
@@ -113,8 +113,26 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IContextMenuF
     private void initGui() {
         mainTabPane = new JTabbedPane();
 
-        mainPanel = new JPanel();
-        mainPanel.setLayout(new GridLayout(3, 2));
+        JSplitPane mainPanel_up = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        mainPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+
+        JPanel p1 = new JPanel();
+        JPanel p2 = new JPanel();
+        JPanel p3 = new JPanel();
+
+        p1.setLayout(new GridLayout(1, 2));
+        p2.setLayout(new GridLayout(1, 2));
+        p3.setLayout(new GridLayout(1, 2));
+
+        mainPanel_up.add(p1);
+        mainPanel_up.add(p2);
+        mainPanel.add(mainPanel_up);
+        mainPanel.add(p3);
+        mainPanel.setResizeWeight(0.25);
+
+        p1.setPreferredSize(new Dimension(100, 200));
+        p2.setPreferredSize(new Dimension(100, 500));
+        p3.setPreferredSize(new Dimension(100, 80));
 
         messagesModel = new MessagesModel(this.helpers);
 
@@ -161,7 +179,7 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IContextMenuF
         JTabbedPane extMessagesTab = new JTabbedPane();
         extMessagesTab.addTab("Extraction message list", extMsgScrollPane);
 
-        mainPanel.add(extMessagesTab);
+        p1.add(extMessagesTab);
 
         // replace messages table
         repMessagesTable = new MessagesTable(this, false);
@@ -202,11 +220,11 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IContextMenuF
         JTabbedPane repMessagesTab = new JTabbedPane();
         repMessagesTab.addTab("Replace message list", repMsgScrollPane);
 
-        mainPanel.add(repMessagesTab);
+        p1.add(repMessagesTab);
 
         // add editor tabs
-        mainPanel.add(extMessagesTabs);
-        mainPanel.add(repMessagesTabs);
+        p2.add(extMessagesTabs);
+        p2.add(repMessagesTabs);
 
         // extraction panel
         JPanel extractionPanel = new JPanel();
@@ -266,7 +284,7 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IContextMenuF
         extButtonsPane.add(extFromSelectionButton);
 
         extractionPanel.add(extButtonsPane);
-        mainPanel.add(extTab);
+        p3.add(extTab);
 
         // replace panel
         JPanel replacePanel = new JPanel();
@@ -296,9 +314,9 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IContextMenuF
         replaceType = new JComboBox<>();
         replaceType.addItem(Replace.TYPE_REP_SEL);
         replaceType.addItem(Replace.TYPE_ADD_SEL);
-        replaceType.addItem(Replace.TYPE_REP_LAST);
-        replaceType.addItem(Replace.TYPE_ADD_LAST);
-        replaceType.addItem(Replace.TYPE_REP_HEADER_LAST);
+        replaceType.addItem(Replace.TYPE_REP_BURP);
+        replaceType.addItem(Replace.TYPE_ADD_BURP);
+        replaceType.addItem(Replace.TYPE_REP_HEADER_BURP);
         replaceNameStringField = new JTextField();
 
         replaceType.addActionListener(new ConfigChangedListener(this, ConfigActions.A_REP_CONFIG_CHANGED));
@@ -331,7 +349,7 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IContextMenuF
         replaceButtonsPane.add(repFromSelectionButton);
 
         replacePanel.add(replaceButtonsPane);
-        mainPanel.add(repTab);
+        p3.add(repTab);
 
         mainTabPane.addTab("Main window", mainPanel);
 
@@ -383,7 +401,13 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IContextMenuF
         logger.add(loggerMessagesEditorPanel);
 
         mainTabPane.addTab("Logger", logger);
+        p1.revalidate();
+        p2.revalidate();
+        p3.revalidate();
 
+        p1.repaint();
+        p2.repaint();
+        p3.repaint();
         initSettingsGui(mainTabPane);
     }
 
@@ -754,9 +778,9 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IContextMenuF
 
 
         String replaceTypeString = replaceType.getSelectedItem().toString();
-        if (replaceTypeString.equals(Replace.TYPE_ADD_LAST) ||
-                replaceTypeString.equals(Replace.TYPE_REP_LAST) ||
-                replaceTypeString.equals(Replace.TYPE_REP_HEADER_LAST)) {
+        if (replaceTypeString.equals(Replace.TYPE_ADD_BURP) ||
+                replaceTypeString.equals(Replace.TYPE_REP_BURP) ||
+                replaceTypeString.equals(Replace.TYPE_REP_HEADER_BURP)) {
             ignore_rep_row = true;
         }
 

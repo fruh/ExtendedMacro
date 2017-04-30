@@ -141,6 +141,7 @@ public class ConfigListener implements ActionListener {
                         extender.getReplaceModel().addReplace(rep);
                     }
                     else {
+                        rep.setMsgId("Burp");
                         extender.getReplaceModel().addReplaceLast(rep);
                     }
                     extender.stdout.println("[+] Adding new replace: " + rep);

@@ -7,15 +7,20 @@ It is still in development, so please don't be angry if something getting wrong,
 - create sequence of the request to be triggered before the every request call
 - extract data from arbitrary response
 - paste extracted data into arbitrary following request
-  - from the sequence
-  - into the last request (Intruder, Repeater, Scanner, Sequencer or Spider)
+  - replacement of the existing data
+  - add new HTTP header
+  - replacement of the HTTP header
 - create new header
 - changing order of the requests
+- URL decoding of extracted data
+- extracted data caching
+	- you can specify time interval, when the extraction will be performed
 
 ## Advantages against the BurpSuite Macro
 - ability to replace arbitrary string in the request
 - ability to add new header into the request
 - easier configuration than macro (does not seems to be, but it is ;))
+- extracted data caching
 
 ## About the UI
 The plug-in adds new tab into the BurpSuite named "ExtendedMacro". It contains several tabs: "Main", "Logger" and "Settings".
